@@ -10,11 +10,17 @@ because a `/swot` run noticed the profile is old.
 ## Configuration
 
 ```
-CAREER_REPO_PATH = /Users/tina/dev_projects/professional_swot
-ABOUT_ME         = ${CAREER_REPO_PATH}/about-me.md
+CAREER_DRIVE_FOLDER_ID    = 15frOJ6UugnUgKtZquxw1FjpXiD9Ly1n0   # "Career" folder in Google Drive
+ABOUT_ME_FOLDER_ID        = 1yfNxMx2gPcwVD6SWarfa5w9v3B2VH8Xq   # Career/General/about-me
+SOURCE_DOCS_FOLDER_ID     = 1vE75R7GWYW7mjhyaIzcsBxGp4bq41ObI   # Career/General/source-documents
+OPPORTUNITIES_FOLDER_ID   = 1AbFjNEaqk1ktKQOmXfd_WK1Ni4HwmTgk   # Career/Opportunities
 ```
-If `${CAREER_REPO_PATH}` is ever renamed or moved, this is the only line that needs to change in this
-skill (the `swot` skill has its own copy of this constant — they don't share state).
+All data lives in Google Drive, not a local repo — this works the same whether run from Claude Code or
+claude.ai chat. If any of these folders is ever recreated or moved, these are the only lines that need to
+change in this skill (the `swot` skill has its own copy of these constants — they don't share state).
+There is no in-place content-edit capability on these Drive files, so every refresh writes a fresh, dated
+`about-me-<yyyymmdd>.md` rather than overwriting the previous one — the prior file is left in place, which
+doubles as free version history.
 
 ## Workflow
 
@@ -23,25 +29,48 @@ skill (the `swot` skill has its own copy of this constant — they don't share s
    skill gap, a corrected figure). Otherwise proceed with a full refresh.
 
 2. **Re-gather source material.**
-   - Search Google Drive (via the `mcp__claude_ai_Google_Drive__*` tools) for the resume and any cover
-     letters or career documents — look for anything newer than the "Last verified" dates already in
-     `${ABOUT_ME}`'s "Canonical source documents" section, plus a general resume/CV search in case
-     something new was added.
-   - Fetch the personal website's current content (its URL and/or source repo are listed in `${ABOUT_ME}`).
+   - Load the current profile first: `search_files` in `${ABOUT_ME_FOLDER_ID}` for `about-me-*.md`, take
+     the highest-dated one, `read_file_content` it. Note its `Last refreshed` date — the next sub-step
+     needs it.
+   - Search `${SOURCE_DOCS_FOLDER_ID}` for the resume, cover letters, and any other career documents —
+     look for anything newer than the "Last verified" dates already in the current profile's "Canonical
+     source documents" section. Only widen to an unscoped Drive search (via the
+     `mcp__claude_ai_Google_Drive__*` tools) if nothing relevant turns up there, or the user mentions a
+     document that isn't in that folder yet.
+   - **Scan for flagged opportunity-log entries** (this is how a gap surfaced mid-opportunity-prep — e.g.
+     recruiter feedback naming a skill, or an unrelated fact like prior volunteer IT work that turns out to
+     be relevant — makes it into the durable profile without the user having to remember and re-type it
+     later): `search_files(parentId = OPPORTUNITIES_FOLDER_ID)` to enumerate every opportunity folder; for
+     each, resolve its `log/` subfolder id and `search_files` inside it with
+     `createdTime > <the current profile's Last refreshed date>`. This date filter is the only "already
+     consumed" tracking needed — a flagged entry stops turning up once a refresh happens after its date, no
+     separate state to maintain. `read_file_content` each match and check its YAML frontmatter for
+     `about_me_gap_flagged: true`; collect the ones that are. Run by default, same as the document scan
+     above — not something the user has to ask for separately.
+   - Fetch the personal website's current content (its URL and/or source repo are listed in the current
+     profile).
    - LinkedIn cannot be fetched automatically — ask the user to paste an updated LinkedIn export (or the
-     specific sections that changed). This is a standing manual step on every refresh, not a one-time gap.
+     specific sections that changed), or to upload the export file directly into
+     `${SOURCE_DOCS_FOLDER_ID}`. This is a standing manual step on every refresh, not a one-time gap.
 
-3. **Diff before overwriting.** Compare newly gathered material against the current `${ABOUT_ME}`. Before
-   changing anything, summarize for the user: what's new, what changed, what appears resolved (e.g. a
-   flagged data inconsistency that a new document clarifies), and what's simply unchanged. Get
-   confirmation before overwriting any existing fact — don't silently replace a number or claim.
+3. **Diff before overwriting.** Compare everything gathered in step 2 — new/updated documents, flagged
+   log entries, website, LinkedIn — against the current profile already loaded above. Before changing
+   anything, summarize for the user: what's new, what changed, what appears resolved (e.g. a flagged data
+   inconsistency that a new document clarifies), and what's simply unchanged. For each flagged log entry,
+   name which opportunity and date it came from and what it says, same as any other candidate source. Get
+   confirmation before overwriting any existing fact or incorporating a flagged item — don't silently
+   replace a number or claim, and don't silently fold in a gap just because it was flagged.
 
-4. **Rewrite the profile.** Update `${ABOUT_ME}` following the schema in `references/about-me-schema.md`
-   exactly — same nine sections, same order. Update the header's `Last refreshed` date and append a dated
-   line to the Change log describing what changed this time.
+4. **Rewrite the profile.** Compose the full new profile in memory, following the schema in
+   `references/about-me-schema.md` exactly — same nine sections, same order — carrying forward every
+   section unchanged except what this refresh updates (this is a full-content copy each time, not a patch,
+   since there's no partial-write capability). When incorporating a fact sourced from a flagged log entry,
+   cite it the same way other bullets cite `(Resume 2024)` — e.g.
+   `(logged via anthropic-applied-ai-architect-20260822, 2026-08-25)` — so the audit trail survives. Update
+   the header's `Last refreshed` date to today and append a dated line to the Change log describing what
+   changed this time. `create_file` the result into `${ABOUT_ME_FOLDER_ID}` as `about-me-<yyyymmdd>.md`
+   (today's date) — do not touch or trash the previous file.
 
-5. **Commit.** In `${CAREER_REPO_PATH}`: `git add about-me.md`, then
-   `git commit -m "Refresh about-me profile — <date>"`, then `git push`.
-
-6. **Report back** with a short summary of what changed — new roles/achievements added, gaps closed (with
-   the evidence for closing them), conflicts resolved, anything still open.
+5. **Report back** with a short summary of what changed — new roles/achievements added, gaps closed (with
+   the evidence for closing them), conflicts resolved, anything still open — plus the new file's Drive
+   link.

@@ -22,12 +22,17 @@ add/update content within sections rather than restructuring the file.
    not just an intention).
 
 5. **Recurring narrative / talking points** — reusable prose for framing questions that tend to recur
-   across applications (career transitions, degree-vs-role mismatches, "why this specialization," etc.).
+   across opportunities (career transitions, degree-vs-role mismatches, "why this specialization," etc.).
    Write these as ready-to-use paragraphs, not bullet fragments — the goal is that `/swot` can lift them
    directly instead of re-deriving the framing through another round of clarifying questions.
 
 6. **Personal constraints** — location, relocation/travel flexibility, and any other standing constraint
    relevant to fit assessment (compensation floor, start-date constraints, etc., if the user shares them).
+   Anything that's still being worked out on a per-opportunity basis (e.g. relocation flexibility not yet
+   settled into a standard answer) should point at that opportunity's `log/` entries (via
+   `/opportunity-log`), not at its SWOT brief — the brief is a frozen point-in-time snapshot, while the log
+   is where an evolving answer actually gets gathered over time. Update this section here only once a
+   consistent position solidifies across opportunities.
 
 7. **Known data inconsistencies** — an explicit, dated list of any conflicts found between source
    documents (e.g. two different figures for the same achievement). When a refresh resolves one, don't
@@ -35,7 +40,11 @@ add/update content within sections rather than restructuring the file.
 
 8. **Canonical source documents** — every document `/swot-refresh` has pulled from, with enough detail to
    re-find it (Drive file name/ID, website URL/repo, LinkedIn export method) and a `Last verified` date
-   per document, so a future refresh knows exactly what's stale.
+   per document, so a future refresh knows exactly what's stale. A flagged `opportunity-log` entry
+   (`about_me_gap_flagged: true`, surfaced mid-opportunity-prep and swept up on the next refresh) is also
+   a recognized source type — cite it inline where the fact lands in section 2/4/etc. (opportunity slug +
+   entry date) rather than listing it here, since it's a one-time input, not an ongoing document to
+   re-check for staleness.
 
 9. **Change log** — one dated one-line entry per refresh, human-readable, on top of whatever git history
    already shows.
@@ -49,3 +58,5 @@ add/update content within sections rather than restructuring the file.
   refresh.
 - Gaps in section 4 should only be marked closed with the user's explicit confirmation and a concrete
   reason — "started using X" is progress worth noting in section 5, not the same as "gap closed."
+- A flagged `opportunity-log` entry is a candidate, not an automatic edit — it goes through the same
+  diff-and-confirm step as any other newly gathered material before it lands anywhere in this file.
