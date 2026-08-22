@@ -1,0 +1,419 @@
+<title>{{PAGE_TITLE}}</title>
+<style>
+  :root {
+    --paper: #eff1ee;
+    --surface: #f8f9f6;
+    --ink: #1c231f;
+    --ink-soft: #51584f;
+    --ink-faint: #7c837a;
+    --line: #d6dad3;
+    --accent: #a85e2a;
+    --accent-strong: #7c441c;
+    --accent-soft: #f1e4d5;
+
+    --sw-bg: #e4e9dd; --sw-border: #b7c7a8; --sw-ink: #33422a;
+    --wk-bg: #eee1d3; --wk-border: #d3b594; --wk-ink: #5b3b1e;
+    --op-bg: #dce6e8; --op-border: #a9c3c6; --op-ink: #223e42;
+    --th-bg: #ebdfdd; --th-border: #cfaca8; --th-ink: #5c2e2c;
+
+    --shadow: 0 1px 2px rgba(28,35,31,0.06), 0 8px 24px -12px rgba(28,35,31,0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #141815;
+      --surface: #1b211d;
+      --ink: #e9ece6;
+      --ink-soft: #aeb6a8;
+      --ink-faint: #7c8578;
+      --line: #2c332c;
+      --accent: #d68a4c;
+      --accent-strong: #f0ae72;
+      --accent-soft: #3a2c1c;
+
+      --sw-bg: #212b1d; --sw-border: #3e4e33; --sw-ink: #c3d3b2;
+      --wk-bg: #2b2117; --wk-border: #4e3a26; --wk-ink: #e3c39c;
+      --op-bg: #17262a; --op-border: #2c4a4f; --op-ink: #a9cbd0;
+      --th-bg: #2a1e1e; --th-border: #4c3230; --th-ink: #e0b6b2;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #141815;
+    --surface: #1b211d;
+    --ink: #e9ece6;
+    --ink-soft: #aeb6a8;
+    --ink-faint: #7c8578;
+    --line: #2c332c;
+    --accent: #d68a4c;
+    --accent-strong: #f0ae72;
+    --accent-soft: #3a2c1c;
+
+    --sw-bg: #212b1d; --sw-border: #3e4e33; --sw-ink: #c3d3b2;
+    --wk-bg: #2b2117; --wk-border: #4e3a26; --wk-ink: #e3c39c;
+    --op-bg: #17262a; --op-border: #2c4a4f; --op-ink: #a9cbd0;
+    --th-bg: #2a1e1e; --th-border: #4c3230; --th-ink: #e0b6b2;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif {
+    font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, monospace;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 4rem;
+  }
+
+  header.brief {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 2.25rem;
+  }
+
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    line-height: 1.15;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    margin: 0 0 1.1rem;
+  }
+
+  .status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .status-strip strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .status-strip .mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary {
+    font-size: 1.08rem;
+    line-height: 1.7;
+    max-width: 66ch;
+    margin: 0 0 2.5rem;
+  }
+
+  .summary strong { color: var(--ink); }
+
+  .axis-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .axis-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  .swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 640px) {
+    .swot-grid { grid-template-columns: 1fr; }
+    .axis-row { display: none; }
+  }
+
+  .quad {
+    border-radius: 10px;
+    border: 1px solid var(--border-c);
+    background: var(--bg-c);
+    padding: 1.5rem 1.5rem 1.65rem;
+    box-shadow: var(--shadow);
+  }
+
+  .quad.strengths     { --bg-c: var(--sw-bg); --border-c: var(--sw-border); --ink-c: var(--sw-ink); }
+  .quad.weaknesses     { --bg-c: var(--wk-bg); --border-c: var(--wk-border); --ink-c: var(--wk-ink); }
+  .quad.opportunities  { --bg-c: var(--op-bg); --border-c: var(--op-border); --ink-c: var(--op-ink); }
+  .quad.threats        { --bg-c: var(--th-bg); --border-c: var(--th-border); --ink-c: var(--th-ink); }
+
+  .quad .kicker {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-c);
+    opacity: 0.72;
+    margin: 0 0 0.35rem;
+    font-weight: 600;
+  }
+
+  .quad h2 {
+    font-size: 1.3rem;
+    margin: 0 0 1rem;
+    color: var(--ink-c);
+    font-weight: 700;
+  }
+
+  .quad ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .quad li {
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-c);
+    color: var(--ink);
+  }
+
+  .quad li:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .quad p {
+    margin: 0 0 0.3rem;
+    font-size: 0.96rem;
+    line-height: 1.55;
+  }
+
+  .src {
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-c);
+    opacity: 0.75;
+  }
+
+  section.actions {
+    margin-top: 2.5rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.75rem 1.75rem 1.9rem;
+    background: var(--surface);
+  }
+
+  section.actions h2 {
+    font-size: 1.05rem;
+    margin: 0 0 1rem;
+    color: var(--accent-strong);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+
+  .actions ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    counter-reset: step;
+  }
+
+  .actions li {
+    display: flex;
+    gap: 0.9rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+  }
+
+  .actions li::before {
+    counter-increment: step;
+    content: counter(step);
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, "SF Mono", monospace;
+  }
+
+  .loop-strip {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .loop-strip h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.9rem;
+    font-weight: 600;
+  }
+
+  .loop-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+
+  .loop-steps span {
+    display: flex;
+    align-items: center;
+  }
+
+  .loop-steps span:not(:last-child)::after {
+    content: "→";
+    margin: 0 0.6rem;
+    color: var(--ink-faint);
+  }
+
+  footer.sources {
+    margin-top: 2.25rem;
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+    line-height: 1.7;
+  }
+
+  footer.sources p { margin: 0 0 0.5rem; }
+
+  a { color: var(--accent-strong); }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .quad, header.brief, section.actions {
+      animation: rise 0.5s ease-out both;
+    }
+    .quad.weaknesses { animation-delay: 0.05s; }
+    .quad.opportunities { animation-delay: 0.1s; }
+    .quad.threats { animation-delay: 0.15s; }
+    section.actions { animation-delay: 0.2s; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
+</style>
+
+<div class="page">
+
+  <header class="brief">
+    <p class="eyebrow">Candidate Readiness Brief · Private</p>
+    <h1 class="serif">{{H1}}</h1>
+    <p class="subtitle">{{SUBTITLE}}</p>
+    <div class="status-strip">
+      {{STATUS_STRIP_HTML}}
+    </div>
+  </header>
+
+  <p class="summary">
+    {{SUMMARY_HTML}}
+  </p>
+
+  <div class="axis-row">
+    <p class="axis-label">Helpful</p>
+    <p class="axis-label">Harmful</p>
+  </div>
+
+  <div class="swot-grid">
+
+    <div class="quad strengths">
+      <p class="kicker">Internal · Helpful</p>
+      <h2 class="serif">Strengths</h2>
+      <ul>
+        {{STRENGTHS_ITEMS_HTML}}
+      </ul>
+    </div>
+
+    <div class="quad opportunities">
+      <p class="kicker">External · Helpful</p>
+      <h2 class="serif">Opportunities</h2>
+      <ul>
+        {{OPPORTUNITIES_ITEMS_HTML}}
+      </ul>
+    </div>
+
+    <div class="quad weaknesses">
+      <p class="kicker">Internal · Harmful</p>
+      <h2 class="serif">Weaknesses</h2>
+      <ul>
+        {{WEAKNESSES_ITEMS_HTML}}
+      </ul>
+    </div>
+
+    <div class="quad threats">
+      <p class="kicker">External · Harmful</p>
+      <h2 class="serif">Threats</h2>
+      <ul>
+        {{THREATS_ITEMS_HTML}}
+      </ul>
+    </div>
+
+  </div>
+
+  <section class="actions">
+    <h2>{{ACTIONS_HEADING}}</h2>
+    <ol>
+      {{ACTIONS_ITEMS_HTML}}
+    </ol>
+  </section>
+
+  {{LOOP_STRIP_HTML}}
+
+  <footer class="sources">
+    <p><strong>Sources:</strong> {{SOURCES_HTML}}</p>
+    <p>Prepared privately for interview preparation. Not for external distribution.</p>
+  </footer>
+
+</div>
